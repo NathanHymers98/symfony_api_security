@@ -17,7 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class JwtTokenAuthenticator extends AbstractGuardAuthenticator
+class JwtTokenAuthenticator extends AbstractGuardAuthenticator // Every authenticator extends this class
 {
     private $jwtEncoder;
     private $em;
@@ -30,33 +30,33 @@ class JwtTokenAuthenticator extends AbstractGuardAuthenticator
         $this->responseFactory = $responseFactory;
     }
 
-    public function getCredentials(Request $request)
+    public function getCredentials(Request $request) // Reads the authorization header and gets the token if one is being passed
     {
-        $extractor = new AuthorizationHeaderTokenExtractor(
-            'Bearer',
-            'Authorization'
+        $extractor = new AuthorizationHeaderTokenExtractor( // Creating the extractor which will extract the token
+            'Bearer', // The prefix before the actual token
+            'Authorization' // The header to look on because it will contain the token
         );
 
-        $token = $extractor->extract($request);
+        $token = $extractor->extract($request); // Getting the token via the extractor
 
-        if (!$token) {
+        if (!$token) { // If the token does not exist, then return nothing. This will cause authentication to stop not fail
             return;
         }
 
-        return $token;
+        return $token; // if the token does exist, then return it
     }
 
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function getUser($credentials, UserProviderInterface $userProvider) // next this method will be called, and it gets passed the users credentials as an argument. It's job is to find the user the token relates to
     {
-        $data = $this->jwtEncoder->decode($credentials);
+        $data = $this->jwtEncoder->decode($credentials); // Using the jwtEncoder to decode the token, so that we can get the username for the user
 
-        if ($data === false) {
-            throw new CustomUserMessageAuthenticationException('Invalid Token');
+        if ($data === false) { // if the token doesn't exist
+            throw new CustomUserMessageAuthenticationException('Invalid Token'); // throw a new exception
         }
 
-        $username = $data['username'];
+        $username = $data['username']; // if the token does exist, get the username from the decoded token
 
-        return $this->em
+        return $this->em // return the user object that was found in the database using the username we just got from the decoded token
             ->getRepository('AppBundle:User')
             ->findOneBy(['username' => $username]);
     }

@@ -13,6 +13,9 @@ class ProgrammerControllerTest extends ApiTestCase
         $this->createUser('weaverryan');
     }
 
+    // NOTES: Guard is in Symfony's core security system
+    // Allows us to make custom authentication
+
     public function testPOSTProgrammerWorks()
     {
         $data = array(
